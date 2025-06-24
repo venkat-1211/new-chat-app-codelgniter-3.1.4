@@ -1,0 +1,69 @@
+
+// tables
+
+CREATE TABLE `chat_messages` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `auth_id` INT UNSIGNED NOT NULL, -- logged in user id
+  `sender_id` INT UNSIGNED NOT NULL,        -- User who sent the message
+  `message_content` TEXT,                   -- Actual message or image URL
+  `message_translate` TEXT,                   -- Actual message Translate To English
+  `message_type` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1=text, 2=image',
+  `is_ai_generated` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '1=Yes, 0=No',
+  `is_read` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '1=Read, 0=Unread',
+  `status` TINYINT(1) DEFAULT 1 COMMENT '1=active, 0=deleted',
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_auth_sender` (`auth_id`, `sender_id`),
+  KEY `idx_message_type_status` (`message_type`, `status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `chat_sessions` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  
+  `participant_id` INT UNSIGNED NOT NULL,            -- Refers to the user in the chat
+  `chat_language` VARCHAR(10) DEFAULT 'english',          -- Language
+  `timezone` VARCHAR(100),
+  `is_typing` TINYINT(1) DEFAULT 1 COMMENT '1=typing, 0=!typing, 2=admin',         -- 1 means normal user to Admin Typing, 2 means Admin to Normal User typing
+  `is_online` TINYINT(1) DEFAULT 1 COMMENT '1=online, 0=offline',
+  `chat_status` TINYINT(1) DEFAULT 1 COMMENT '1=active, 0=inactive',
+  
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`),
+  KEY `idx_participant_id` (`participant_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `users` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `role_id` TINYINT(1) DEFAULT 2 COMMENT '1=Admin, 2=Normal User',
+  `username` VARCHAR(100) NOT NULL UNIQUE,
+  `email` VARCHAR(150) NOT NULL UNIQUE,
+  `password_hash` VARCHAR(255) NOT NULL,
+  `status` TINYINT(1) DEFAULT 1,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+// tables End
+
+
+// Codes Add
+
+1. autoload.php:
+    $autoload['libraries'] = array('database', 'session', 'phpsession');
+    $autoload['helper'] = array('url');
+
+2. config.php:
+    $config['base_url'] = 'http://localhost/new_chat_app/';
+    
+
+// Libraries Add
+
+
+// Coding notes
+
+1. data(auth-id)  iruntha athu admin chatbox.
+
+
