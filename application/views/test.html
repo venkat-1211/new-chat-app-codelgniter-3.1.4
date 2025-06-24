@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartHR Chat</title>
+    <!-- Bootstrap 4 CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            background-color: #f4f7fc;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #333;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            background: linear-gradient(180deg, #ffffff 0%, #f9f9f9 100%);
+            height: 100vh;
+            border-right: 1px solid #e1e4e8;
+            padding: 25px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+        }
+        .sidebar h4 {
+            color: #007bff;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        .sidebar .nav-link {
+            color: #444;
+            padding: 12px 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #f1f3f5;
+            color: #ff6200;
+        }
+        .sidebar .nav-link.active {
+            background-color: #ff6200;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(255, 98, 0, 0.2);
+        }
+        .sidebar .nav-link i {
+            margin-right: 12px;
+            font-size: 1.1rem;
+        }
+        .sidebar .badge-danger {
+            background-color: #ff4444;
+            font-size: 0.7rem;
+            padding: 3px 6px;
+        }
+
+        /* Chat List Styling */
+        .chat-list {
+            width: 320px;
+            max-height: 100vh;
+            overflow-y: auto;
+            border: none;
+            border-radius: 12px;
+            background: #ffffff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            margin-right: 20px;
+        }
+        .chat-list-header {
+            padding: 1rem;
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: #333;
+            border-bottom: 1px solid #e9ecef;
+            background: #f8f9fa;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+        .chat-search {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .chat-search input {
+            border-radius: 25px;
+            border: 1px solid #d1d5db;
+            padding: 8px 20px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .chat-search input:focus {
+            border-color: #ff6200;
+            box-shadow: 0 0 5px rgba(255, 98, 0, 0.2);
+            outline: none;
+        }
+        .chat-list-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f1f3f5;
+            transition: background 0.2s ease;
+        }
+        .chat-list-item:hover,
+        .chat-list-item.active {
+            background-color: #f8f9fa;
+            text-decoration: none;
+        }
+        .chat-list-item:last-child {
+            border-bottom: none;
+        }
+        .chat-list-item .avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 0.85rem;
+            position: relative;
+        }
+        .chat-list-item .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .chat-list-item .avatar .status-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            background: #28a745;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .chat-list-item .chat-info .name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #333;
+        }
+        .chat-list-item .chat-info .last-message {
+            font-size: 0.85rem;
+            color: #6c757d;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+        .chat-list-item .chat-time {
+            font-size: 0.75rem;
+            color: #adb5bd;
+        }
+        .chat-list-item .badge-new {
+            font-size: 0.7rem;
+            background-color: #ff4444 !important;
+            border-radius: 12px;
+            padding: 0.2em 0.5em;
+            font-weight: 600;
+        }
+        .chat-list-item .missed-call {
+            font-size: 0.8rem;
+            color: #ff4444;
+            font-weight: 500;
+        }
+
+        /* Chat Area Styling */
+        .chat-area {
+            background: #ffffff;
+            height: 100vh;
+            width: 100%; /* Full width of the parent container */
+            padding: 0;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+        .chat-header img {
+            width: 40px;
+            height: 40px;
+        }
+        .chat-header strong {
+            color: #333;
+            font-weight: 600;
+        }
+        .chat-header small {
+            color: #28a745;
+            font-size: 0.85rem;
+        }
+        .chat-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .chat-message {
+            padding: 12px 18px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            max-width: 70%;
+            position: relative;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+        .chat-message.received {
+            background: #f1f3f5;
+            color: #333;
+        }
+        .chat-message.sent {
+            background: #ff6200;
+            color: #fff;
+            margin-left: auto;
+        }
+        .chat-message small {
+            font-size: 0.75rem;
+            color: #adb5bd;
+            display: block;
+            margin-top: 5px;
+        }
+        .chat-input {
+            padding: 15px 20px;
+            border-top: 1px solid #e9ecef;
+            background: #f8f9fa;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+        .chat-input .form-control {
+            border-radius: 25px;
+            border: 1px solid #d1d5db;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+        }
+        .chat-input .btn {
+            border-radius: 20px;
+            padding: 8px 15px;
+        }
+        .chat-input .btn-primary {
+            background-color: #ff6200;
+            border-color: #ff6200;
+        }
+        .chat-input .btn-outline-secondary {
+            border-color: #d1d5db;
+            color: #666;
+        }
+
+        /* Chat Icon and Tab Styling */
+        .chat-icon {
+            position: fixed;
+            bottom: 25px; /* Moved to top-right */
+            right: 25px;
+            background: #ff6200;
+            color: #fff;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 98, 0, 0.3);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        .chat-icon:hover {
+            transform: scale(1.1);
+        }
+        .chat-tab {
+            position: fixed;
+            bottom: 100px; /* Adjusted to align below the chat icon */
+            right: 25px;
+            width: 320px;
+            height: 450px;
+            background: #fff;
+            border-radius: 15px;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        .chat-tab.active {
+            display: flex;
+        }
+        .chat-tab-header {
+            background: #ff6200;
+            color: #fff;
+            padding: 12px 15px;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-tab-header span {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .chat-tab-header i {
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .chat-tab-header i:hover {
+            color: #ffe6cc;
+        }
+        .chat-tab-body {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        .chat-tab-footer {
+            padding: 10px 15px;
+            border-top: 1px solid #e9ecef;
+            background: #fff;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+        }
+        .chat-tab-footer .form-control {
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+        }
+        .chat-tab-footer .btn {
+            border-radius: 20px;
+            padding: 8px 15px;
+            background: #ff6200;
+            border-color: #ff6200;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-2 sidebar">
+                <h4 class="text-primary mb-4">SmartHR</h4>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-tachometer-alt"></i> Dashboard <span class="badge badge-danger ml-2">Hot</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#"><i class="fas fa-users"></i> Applications</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-comment"></i> Chat</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-phone"></i> Calls</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-calendar"></i> Calendar</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-envelope"></i> Email</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-tasks"></i> To Do</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-sticky-note"></i> Notes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-rss"></i> Social Feed</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-folder"></i> File Manager</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-user"></i> Profile</a>
+                    </li>
+                    <li class="nav-item mt-5">
+                        <a class="nav-link" href="#"><i class="fas fa-sign-out-alt"></i> Super Admin</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Chat List -->
+            <div class="chat-list shadow-sm mr-3">
+                <div class="chat-list-header">Chats</div>
+                <div class="chat-search">
+                    <input type="text" placeholder="Search For Contacts or Messages" aria-label="Search contacts or messages" />
+                </div>
+                <a href="#" class="chat-list-item active" tabindex="0">
+                    <div class="avatar">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/ea3f4c61-ad8c-4bd7-ad08-5ce7275771a5.png" alt="Avatar Anthony Lewis" />
+                        <span class="status-dot" title="Online"></span>
+                    </div>
+                    <div class="chat-info">
+                        <p class="name mb-0">Anthony Lewis</p>
+                        <p class="last-message text-success mb-0"><small>is typing ...</small></p>
+                    </div>
+                    <div class="chat-time text-muted small">02:40 PM</div>
+                </a>
+                <a href="#" class="chat-list-item" tabindex="0">
+                    <div class="avatar">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/f8494efa-21e7-424c-8dcc-83a4f4805ac0.png" alt="Avatar Elliot Murray" />
+                        <span class="status-dot" title="Online"></span>
+                    </div>
+                    <div class="chat-info">
+                        <p class="name mb-0">Elliot Murray</p>
+                        <p class="last-message text-primary mb-0"><small><i class="far fa-file-alt"></i> Document</small></p>
+                    </div>
+                    <div class="chat-time text-muted small">06:12 AM</div>
+                </a>
+                <a href="#" class="chat-list-item" tabindex="0">
+                    <div class="avatar">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/3bc9fe80-fc80-4048-8390-903c98787b58.png" alt="Avatar Stephan Peralt" />
+                        <span class="status-dot" title="Online"></span>
+                    </div>
+                    <div class="chat-info">
+                        <p class="name mb-0">Stephan Peralt</p>
+                        <p class="last-message missed-call mb-0"><small><i class="fas fa-video-slash"></i> Missed Video Call</small></p>
+                    </div>
+                    <div class="chat-time text-muted small">03:15 AM</div>
+                </a>
+                <a href="#" class="chat-list-item" tabindex="0">
+                    <div class="avatar">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/424fea19-8468-4d97-aff4-83f6ddc6fb8d.png" alt="Avatar Rebecca Smith" />
+                        <span class="status-dot" title="Online"></span>
+                    </div>
+                    <div class="chat-info">
+                        <p class="name mb-0">Rebecca Smith</p>
+                        <p class="last-message text-danger mb-0">Hi How are you <span>🔥</span></p>
+                    </div>
+                    <div class="chat-time text-white bg-danger rounded-circle text-center badge-new" title="25 unread messages">25</div>
+                </a>
+                <a href="#" class="chat-list-item" tabindex="0">
+                    <div class="avatar">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/400b1fbe-8a4c-4479-9689-d4b22adbe064.png" alt="Avatar Harvey Smith" />
+                        <span class="status-dot" title="Online"></span>
+                    </div>
+                    <div class="chat-info">
+                        <p class="name mb-0">Harvey Smith</p>
+                        <p class="last-message text-muted mb-0">Haha oh man <span>🔥</span></p>
+                    </div>
+                    <div class="chat-time text-white bg-danger rounded-circle text-center badge-new" title="12 unread messages">12</div>
+                </a>
+                <a href="#" class="chat-list-item" tabindex="0">
+                    <div class="avatar">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/9b75d0bd-e28a-4035-b98e-be4c2308323b.png" alt="Avatar Lori Broaddus" />
+                        <span class="status-dot" title="Online"></span>
+                    </div>
+                    <div class="chat-info">
+                        <p class="name mb-0">Lori Broaddus</p>
+                        <p class="last-message text-muted mb-0">Do you know which...</p>
+                    </div>
+                    <div class="chat-time text-muted small">02:40 PM</div>
+                </a>
+                <a href="#" class="chat-list-item" tabindex="0">
+                    <div class="avatar">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/d47552bd-3723-496b-a003-766b9f82237a.png" alt="Avatar Brian Villalobos" />
+                        <span class="status-dot" title="Online"></span>
+                    </div>
+                    <div class="chat-info">
+                        <p class="name mb-0">Brian Villalobos</p>
+                        <p class="last-message text-muted mb-0">Do you know which...</p>
+                    </div>
+                    <div class="chat-time text-muted small">06:12 AM</div>
+                </a>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="col chat-area"> <!-- Changed from col-7 to col for full width -->
+                <div class="chat-header">
+                    <img src="https://via.placeholder.com/40" class="rounded-circle mr-2" alt="Anthony Lewis">
+                    <div>
+                        <strong>Anthony Lewis</strong><br>
+                        <small>Online</small>
+                    </div>
+                </div>
+                <div class="chat-body">
+                    <div class="chat-message received">
+                        Hi John, I wanted to update you on a new company policy regarding remote work.
+                        <br><small>08:00 AM</small>
+                    </div>
+                    <div class="chat-message received">
+                        Do you have a moment?
+                        <br><small>08:00 AM</small>
+                    </div>
+                    <div class="chat-message sent">
+                        Sure, Sarah. What's the new policy?
+                        <br><small>08:00 AM</small>
+                    </div>
+                    <div class="chat-message received">
+                        Starting next month, we’ll be implementing a hybrid work model. Employees can work from home three days a week.
+                        <br><small>08:00 AM</small>
+                    </div>
+                    <div class="chat-message sent">
+                        That sounds great! Are there any specific requirements for tracking our hours when working remotely?
+                        <br><small>08:00 AM</small>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Type Your Message">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="button"><i class="fas fa-paperclip"></i></button>
+                            <button class="btn btn-primary" type="button"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Icon -->
+    <div class="chat-icon" id="chatIcon">
+        <i class="fas fa-comment"></i>
+    </div>
+
+    <!-- Chat Tab -->
+    <div class="chat-tab" id="chatTab">
+        <div class="chat-tab-header">
+            <span>Quick Chat</span>
+            <i class="fas fa-times" id="closeChatTab"></i>
+        </div>
+        <div class="chat-tab-body">
+            <div class="chat-message received">
+                Welcome to Quick Chat!
+                <br><small>Just now</small>
+            </div>
+        </div>
+        <div class="chat-tab-footer">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Type a message">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="button"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 4 JS and Dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Toggle Chat Tab
+        document.getElementById('chatIcon').addEventListener('click', function() {
+            document.getElementById('chatTab').classList.toggle('active');
+        });
+
+        // Close Chat Tab
+        document.getElementById('closeChatTab').addEventListener('click', function() {
+            document.getElementById('chatTab').classList.remove('active');
+        });
+    </script>
+</body>
+</html>
